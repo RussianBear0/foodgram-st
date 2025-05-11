@@ -131,7 +131,8 @@ jobs:
           tags: russianbear0/foodgram_frontend:latest
   send_message:
     runs-on: ubuntu-latest
-    needs: 
+    needs:
+      - frontend_test 
       - build_and_push_to_docker_hub
       - build_frontend_and_push_to_docker_hub
     steps:
