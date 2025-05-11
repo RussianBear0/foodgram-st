@@ -49,8 +49,8 @@ jobs:
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
       run: |
-        python -m ruff check backend/
-        cd backend/
+        python -m ruff check backend/backend
+        cd backend/backend
         python manage.py test
   build_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
