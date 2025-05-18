@@ -14,6 +14,24 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 Применение миграций
 
+Если БАЗАДАННЫХ - PostgreSQL:
+В корневой директории создать файл ".env"
+DB_HOST=localhost
+DB_PORT=5432
+POSTGRES_USER=django_user
+POSTGRES_PASSWORD=mysecretpassword
+POSTGRES_DB=django
+
+Создать в БД пользователя:
+sudo -u postgres psql -c "CREATE USER django_user WITH PASSWORD 'mysecretpassword';"
+sudo -u postgres psql -c "CREATE DATABASE django OWNER django_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE django TO django_user;"
+
+Перезапустить PostgreSQL:
+sudo systemctl restart postgresql
+
+Запустить:(Если БД SQLite пропустить предыдущй пункт)
+
 python manage.py migrate
 Запуск сервера
 
