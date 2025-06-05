@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import  User, Ingredient, Recipe, IngredientRecipes, UserRecipe, Follow
 
-Post, Group, Comment, Follow,
 class RecipeInline(admin.StackedInline):
     model = Post
     extra = 0
