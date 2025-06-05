@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import  User, Ingredient, Recipe, IngredientRecipes, UserRecipe, Follow
+from .models import  User, Ingredient, Recipe, IngredientRecipes, Follow
 
 class RecipeInline(admin.StackedInline):
     model = Recipe
@@ -49,4 +49,3 @@ admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Follow, FollowAdmin)
 admin.site.register(User) 
 admin.site.register(IngredientRecipes)
-admin.site.register(UserRecipe) 
