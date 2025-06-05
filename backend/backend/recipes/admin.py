@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import  User, Ingredient, Recipe, IngredientRecipes, UserRecipe, Follow
 
 class RecipeInline(admin.StackedInline):
-    model = Post
+    model = Recipe
     extra = 0
 
 
