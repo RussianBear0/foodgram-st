@@ -17,7 +17,6 @@ class RecipeAdmin (admin.ModelAdmin):
     model = Recipe
     list_display = ('author',
                     'name',
-                    'recipe_ingredients',
                     "short_code",
                     "text",
                     "pub_date",
@@ -31,7 +30,6 @@ class IngredientAdmin (admin.ModelAdmin):
     list_display = ('name',
                     'measure',
                     )
-    list_editable = ("name",)
     search_fields = ('name',)
     list_filter = ('name',)
 
