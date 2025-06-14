@@ -8,7 +8,6 @@ from recipes.models import (Ingredient,
                             Tag,
                             IngredientRecipes)
 from rest_framework.validators import UniqueTogetherValidator
-import re
 from django.db import IntegrityError
 
 User = get_user_model()
