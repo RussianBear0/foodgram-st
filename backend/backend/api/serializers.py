@@ -36,6 +36,103 @@ class CustomUserSerializer(serializers.ModelSerializer):
                   'last_name',
                   'avatar',
                   'is_subscribed')
+    def to_internal_value(self, data):
+      email = data.get("email")
+      username = data.get("username")
+      first_name = data.get("first_name")
+      last_name = data.get("last_name")
+        
+      if not email or email.strip() == "":
+          raise serializers.ValidationError(
+              {"email": "Это поле не может быть пустым."}
+          )
+      if len(email) > 254:
+          raise serializers.ValidationError(
+              {"email": "Максимальная длина email 254 символа."}
+          )
+      if User.objects.filter(email=email).exists():
+          raise serializers.ValidationError(
+              {"email": "Пользователь с таким email уже существует."}
+          )
+
+      if not username or username.strip() == "":
+          raise serializers.ValidationError(
+              {"username": "Это поле не может быть пустым."}
+          )
+      if len(username) > 150:
+          raise serializers.ValidationError(
+              {"username": "Максимальная длина имени пользователя 150 символов."}
+          )
+      if User.objects.filter(username=username).exists():
+         raise serializers.ValidationError(
+             {"username": "Пользователь с таким именем уже существует."}
+        )
+      if not re.match(r"^[\w.@+-]+\Z", username):
+        raise serializers.ValidationError(
+              {"username": "Имя пользователя содержит недопустимые символы."}
+          )
+
+      if not first_name or first_name.strip() == "":
+        raise serializers.ValidationError(
+            {"first_name": "Это поле не может быть пустым."}
+          )
+      if len(first_name) > 150:
+        raise serializers.ValidationError(
+              {"first_name": "Максимальная длина имени 150 символов."}
+          )
+
+      if not last_name or last_name.strip() == "":
+          raise serializers.ValidationError(
+              {"last_name": "Это поле не может быть пустым."}
+            )
+      if len(last_name) > 150:
+        raise serializers.ValidationError(
+            {"last_name": "Максимальная длина фамилии 150 символов."}
+        )
+
+      validated_data = super().to_internal_value(data)
+      validated_data["email"] = email
+      validated_data["username"] = username
+      validated_data["first_name"] = first_name
+      validated_data["last_name"] = last_name
+      return validated_data
+
+    def validate_email(self, value):
+        if len(value) > 254:
+            raise serializers.ValidationError("Максимальная длина email 254 символа.")
+        return value
+
+    def validate_username(self, value):
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                "Максимальная длина имени пользователя 150 символов."
+            )
+        if not re.match(r"^[\w.@+-]+\Z", value):
+            raise serializers.ValidationError(
+                "Имя пользователя содержит недопустимые символы."
+            )
+        return value
+
+    def validate_first_name(self, value):
+        if len(value) > 150:
+            raise serializers.ValidationError("Максимальная длина имени 150 символов.")
+        return value
+
+    def validate_last_name(self, value):
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                "Максимальная длина фамилии 150 символов."
+            )
+        return value
+
+    def create(self, validated_data):
+        try:
+            user = User.objects.create_user(**validated_data)
+            return user
+        except IntegrityError:
+            raise serializers.ValidationError(
+                {"detail": "Пользователь с таким email или именем уже существует."}
+            )
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
