@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import  User, Ingredient, Recipe, IngredientRecipes, Follow
+from .models import  User, Ingredient, Recipe, IngredientRecipes, Follow, ShoppingCart
 
 class RecipeInline(admin.StackedInline):
     model = Recipe
@@ -41,6 +41,11 @@ class FollowAdmin (admin.ModelAdmin):
                     )
     list_editable = ("following",)
     search_fields = ('user',)
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe')
+    search_fields = ('user__username', 'recipe__name')
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
