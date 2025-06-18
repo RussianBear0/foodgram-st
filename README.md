@@ -27,6 +27,7 @@ docker compose exec backend python manage.py load_ingredients
 docker compose exec backend python manage.py collectstatic --no-input
 
 Проект  доступен по адресу: http://127.0.0.1:8000/.
+Админ зона проекта доступна по адресу : http://127.0.0.1:8000/admin/
 
 API
 После запуска проекта документация API доступна по адресу: http://localhost/api/docs/.
