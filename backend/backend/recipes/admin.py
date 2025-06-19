@@ -24,7 +24,7 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'author', 'cooking_time', 'favorites_count')
-    search_fields = ('name', 'author__username', 'email')
+    search_fields = ('name', 'author__username')
     list_filter = ('tags', 'author')
     filter_horizontal = ('tags',)
     readonly_fields = ('favorites_count',)
