@@ -31,6 +31,14 @@ from .filters import IngredientFilter
 from django.contrib.auth import get_user_model
 from djoser.views import UserViewSet
 from .serializers import CustomSetPasswordSerializer
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+import io
 
 
 User = get_user_model()
@@ -139,14 +147,65 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(
             total=Sum('amount')
         ).order_by('ingredient__name')
-        file_content = "Ваша корзина\n\n"
-        if not ingredients.exists():
+
+        file_format = request.GET.get('format', 'txt').lower()
+        if file_format == 'pdf':
+            buffer = io.BytesIO()
+
+            try:
+                pdfmetrics.registerFont(TTFont('DejaVuSerif', 'DejaVuSerif.ttf'))
+            except:
+                font_name = 'Helvetica'
+            else:
+                font_name = 'DejaVuSerif'
+
+            p = canvas.Canvas(buffer, pagesize=A4)
+            width, height = A4
+
+            p.setFont(font_name, 16)
+            p.drawString(2*cm, height - 2*cm, "Ваша корзина покупок")
+
+            if not ingredients:
+                p.setFont(font_name, 12)
+                p.drawString(2*cm, height - 4*cm, "Корзина пуста.")
+            else:
+                data = [['Ингредиент', 'Количество', 'Ед. измерения']]
+                for item in ingredients:
+                    data.append([
+                        item['ingredient__name'],
+                        str(item['total']),
+                        item['ingredient__measurement_unit']
+                    ])
+
+                table = Table(data, repeatRows=1)
+                table.setStyle(TableStyle([
+                    ('FONT', (0,0), (-1,-1), font_name, 10),
+                    ('FONTSIZE', (0,0), (-1,0), 12),
+                    ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                    ('GRID', (0,0), (-1,-1), 1, colors.black),
+                    ('ALIGN', (1,1), (1,-1), 'RIGHT'),
+                ]))    
+                table.wrapOn(p, width - 4*cm, height)
+                table.drawOn(p, 2*cm, height - 4*cm - len(data)*0.6*cm)
+
+            p.showPage()
+            p.save()
+
+            buffer.seek(0)
+            response = HttpResponse(buffer, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="shopping_list.pdf"'
+            return response
+
+        file_content = "Ваша корзина покупок\n\n"
+        if not ingredients:
             file_content += "Корзина пуста.\n"
-        for item in ingredients:
-            file_content += (
-                f"• {item['ingredient__name']}: "
-                f"{item['total']} {item['ingredient__measurement_unit']}\n"
-            )
+        else:
+            for item in ingredients:
+                file_content += (
+                    f"• {item['ingredient__name']}: "
+                    f"{item['total']} {item['ingredient__measurement_unit']}\n"
+                )
+
         response = HttpResponse(
             file_content,
             content_type='text/plain; charset=utf-8'
@@ -164,19 +223,19 @@ class SubscriptionViewSet(viewsets.ReadOnlyModelViewSet):
         return User.objects.filter(
             following__user=self.request.user
         ).annotate(recipes_count=Count('recipes'))
-    
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        
+
         recipes_limit = request.query_params.get('recipes_limit')
         context = self.get_serializer_context()
         context['recipes_limit'] = recipes_limit
-        
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True, context=context)
             return self.get_paginated_response(serializer.data)
-        
+
         serializer = self.get_serializer(queryset, many=True, context=context)
         return Response(serializer.data)
 
@@ -351,7 +410,7 @@ def follow(request, user_id):
             )
         Subscription.objects.create(user=user, author=author)
         author = User.objects.annotate(recipes_count=Count('recipes')).get(id=author.id)
-        
+
         serializer = SubscriptionSerializer(author, context={
             'request': request,
             'recipes_limit': request.query_params.get('recipes_limit')
