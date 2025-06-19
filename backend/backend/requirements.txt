@@ -15,6 +15,7 @@ djoser==2.3.1
 dotenv==0.9.9
 flake8==3.9.2
 idna==3.10
+reportlab
 iniconfig==2.1.0
 mccabe==0.6.1
 oauthlib==3.2.2
